@@ -1,6 +1,7 @@
-var forecastDate = document.getElementById("#card-date");
+var forecastDate = document.getElementById("card-date");
+var clearSearches = document.getElementById("clearSearches");
 
-// This function will be used to make the API call
+// Fetching the weather API for the "todays weather" card
 function getApi(cityName) {
   var requestURL = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=33129ac380cd1cfa406b3bbb417e18ca&units=imperial`;
 
@@ -11,23 +12,52 @@ function getApi(cityName) {
     .then(function (data) {
       console.log(data);
       updateTodaysWeather(data);
+      // Grabbing lat & lon of chosen city to pass into forecastCards API function
+      forecastCards(data.coord.lat, data.coord.lon);
     });
 
   saveSearchHistory(cityName);
   displaySearchHistory();
 }
 
+// Fetching the forecast API for the 5 day forecast cards. Also calling data to display on cards.
+var forecastCards = function (lat, lon) {
+  var forecastURL = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=33129ac380cd1cfa406b3bbb417e18ca&units=imperial`;
+
+  fetch(forecastURL)
+    .then(function (response) {
+      if (response.ok) return response.json();
+    })
+    .then(function (data) {
+      console.log(data);
+      // 5 day forecast Temp
+      $(".card-temp").each(function (i) {
+        var newTemp = data.list[i].main.temp;
+        $(this).text("Temp: " + newTemp + "°F");
+      });
+      // 5 day forecast Wind
+      $(".card-wind").each(function (i) {
+        var newWind = data.list[i].wind.speed;
+        $(this).text("Wind: " + newWind + " MPH");
+      });
+      // 5 day forecast Humidity
+      $(".card-humd").each(function (i) {
+        var newHumd = data.list[i].main.humidity;
+        $(this).text("Humidity: " + newHumd + "%");
+      });
+    });
+};
+
+// Displaying todays date and 5 day forecast dates
 var todaysDate = dayjs();
-$('#current-date').text(todaysDate.format("MMMM D, YYYY"));
-// looping through each forecast card to give correct date
+$("#current-date").text(todaysDate.format("MMMM D, YYYY"));
 $(".card-date").each(function (i) {
   // Add 1 to i to start with tomorrow for the first card
   var newDate = todaysDate.add(i + 1, "day").format("MMMM D, YYYY");
   $(this).text(newDate);
 });
 
-// Call this function with the city name to update the "today" weather card
-// Corresponds with HTML elements to pass in weather data
+// Displays all data to the "todays weather" card
 function updateTodaysWeather(data) {
   document.getElementById(
     "current-city"
@@ -65,16 +95,22 @@ function displaySearchHistory() {
   });
 }
 
-// This will run when the page is fully loaded
+// Clears search history list when "clear search" button is clicked
+clearSearches.addEventListener("click", function () {
+  localStorage.setItem("searchHistory", JSON.stringify([]));
+  displaySearchHistory();
+});
+
+// Runs when the page is fully loaded
 document.addEventListener("DOMContentLoaded", function () {
-  // Display search history
+  // Displays any search history
   displaySearchHistory();
 
   var searchButton = document.getElementById("search-button");
   searchButton.addEventListener("click", function () {
     var citySearch = document.getElementById("city-search").value;
     if (citySearch) {
-      getApi(citySearch); // Call the API with the city name
+      getApi(citySearch); // Calls the weather API with the city name
     }
   });
 });
