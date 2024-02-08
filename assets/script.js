@@ -1,5 +1,6 @@
 var forecastDate = document.getElementById("card-date");
 var clearSearches = document.getElementById("clearSearches");
+var weatherIcon = document.getElementById("weather-icon");
 
 // Fetching the weather API for the "todays weather" card
 function getApi(cityName) {
@@ -45,8 +46,26 @@ var forecastCards = function (lat, lon) {
         var newHumd = data.list[i].main.humidity;
         $(this).text("Humidity: " + newHumd + "%");
       });
+      // Icon based on weather condition
+      $(".card-body .weather-icon").each(function (i) {
+        var forecastCondition = data.list[i].weather[0].main;
+        displayIcon(forecastCondition, this);
+      });
     });
 };
+
+// Displaying weather icons based on weather retrieved by API
+function displayIcon(condition, element) {
+  var iconHTML = "";
+  if (condition == "Clear") {
+    iconHTML = '<i class="fa-solid fa-sun"></i>';
+  } else if (condition == "Clouds") {
+    iconHTML = '<i class="fa-solid fa-cloud"></i>';
+  } else if (condition == "Rain") {
+    iconHTML = '<i class="fa-solid fa-cloud-rain"></i>';
+  }
+  $(element).html(iconHTML);
+}
 
 // Displaying todays date and 5 day forecast dates
 var todaysDate = dayjs();
@@ -71,6 +90,7 @@ function updateTodaysWeather(data) {
   document.getElementById(
     "current-humidity"
   ).textContent = `Humidity: ${data.main.humidity}%`;
+  displayIcon(data.weather[0].main, weatherIcon);
 }
 
 // Saves the city searched for to local storage
