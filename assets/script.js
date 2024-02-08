@@ -104,7 +104,6 @@ function saveSearchHistory(searchTerm) {
 function displaySearchHistory() {
   var searches = JSON.parse(localStorage.getItem("searchHistory")) || [];
   var searchList = document.getElementById("search-history");
-  // Clear out the current list
   searchList.innerHTML = "";
   // Create a list item for each search in the history and append to the list
   searches.forEach(function (city) {
